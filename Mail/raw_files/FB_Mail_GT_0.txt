@@ -1,0 +1,4 @@
+24-Dec-2012: 5, 'Luis. </font><font>MD '' Good '' Very good '
+23-Jan-2013: 5, 'JuanEstrada' 'Excellent application, Posts are notified faster than the phone application is' 'Thanks'
+22-Jan-2013: 5, 'Guineíto' 'Great' 'Practice!'
+It'd be very useful if the program would allow you to open PDF files with other iphone programs such as Adobe Reader, QuickOffice, DropBox, etc.'

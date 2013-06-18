@@ -1,0 +1,2 @@
+30-Jan-2013 :  1, 'Samvel Siradeghyan' 'Not satisfied' 'Crashed during send operation, after that I wasn't able to run app'
+14-Jan-2013 :  5, 'Bekozaicev' 'Ymail' 'Great app'

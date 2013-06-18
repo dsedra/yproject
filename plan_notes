@@ -1,0 +1,26 @@
+TODO notes
+
+Objectives:
+	1. to distill sentiment about user feedback from comments/reviews
+	2. use subjectivity analysis to get at common themes and root causes of sentiment
+	3. to return results that prioritize actionable areas, i.e. 
+		- find problems
+		- feature requests
+		- good features
+
+
+
+
+Ideas/Approaches:
+	- Brown clustering: 
+		- after splitting into 
+	- neural networks:
+		- could use supervised (review,rating) to generate a function
+		- unsupervised can be used in clustering
+	- naive Bayes classifier:
+	- classify the sentences into (pos,neg,neut,both) then work on clustering them into catagories, special work for the both ones
+
+
+Features:
+	- words and pos/neg score from SentiWordNet 3.0
+	- common words across a cluster
