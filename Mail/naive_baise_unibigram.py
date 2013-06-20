@@ -53,8 +53,7 @@ def test():
 			rankProb = [0 for x in range(6)]
 			for x in range(1,6):
 				for word in entry.review.split():
-					#rankProb[x] += math.log(uniDictList[x].get(word,1)) - math.log(vocabSize[x]+totalSize[x])
-					pass
+					rankProb[x] += math.log(uniDictList[x].get(word,1)) - math.log(vocabSize[x]+totalSize[x])
 				for bigram in bigrams(entry.review.split()):
 					rankProb[x] += math.log(biDictList[x].get(bigram,1)) - math.log(biVocabSize[x]+bitotalSize[x])
 

@@ -40,8 +40,11 @@ def parseFile(filename):
 			newEntry = Entry(date,rating,comment,review)
 			entryList.append(newEntry)
 			
-
 	return entryList
+
+
+if __name__ == '__main__':
+	parseFile('ymailh')
 
 
 
