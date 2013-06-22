@@ -1,0 +1,34 @@
+Plan -- | -- | -- (05/28/2013)
+
+Objectives:
+	1. to distill sentiment about user feedback from comments/reviews
+	2. use subjectivity analysis to get at common themes and root causes of sentiment
+	3. to return results that prioritize actionable areas, i.e. 
+		- find problems
+		- feature requests
+		- good features
+
+
+Ideas/Approaches:
+	- Brown clustering: 
+		- after splitting into 
+	- neural networks:
+		- could use supervised (review,rating) to generate a function
+		- unsupervised can be used in clustering
+	- naive Bayes classifier:
+	- classify the sentences into (pos,neg,neut,both) then work on clustering them into catagories, special work for the both ones
+
+
+Features:
+	- words and pos/neg score from SentiWordNet 3.0
+	- common words across a cluster
+
+Plan update -- | -- | --(06/21/2013)
+	- Goals: Build a system that facilitates the rappid understanding of user feedback. This invovles understanding the polarity (or ambiguity) of sentiment, then extracting the important features common to a particular sentiment group. This will simplify the process of identifying major product issues.
+
+	- Steps and notes:
+		1. Group comments into three catagories (POS/NEG/BTH). Neutral is omitted because it doesn't appear in any of the datasets, as far as I can tell.
+		2. The process of grouping will likely require a sent. score of some kind. This will give us a metric of how positive or negative a comment (or part of one) is.
+		3. Attempt to determine what features of the product are liked/disliked and group them to determine common issues across the sentiment class.
+		- At each step the accuracy must be determined using an annotated testing set.
+	 

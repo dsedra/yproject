@@ -1,0 +1,68 @@
+Subjectivity Word Sense Disambiguation (Akkaya, Wiebe 2009)
+	- subjectiviy word sense disambiguation (swsd): automatically determine which word instances
+	are being used with subjectivity senses vs. objective
+	- 
+
+
+
+Recognizing Contextual Polarity in Phrase-Level Sentiment Analysis (Wilson, Wiebe, Hoffmann 2009)
+	relevant ideas:
+		- methods for distinguishing prior and contextual polarity
+		- two steps:
+			1. classify phrases as neutral or polar
+			2. then classify as positive, negative, neutral, both ()
+		- manually annotated
+		- neutral/polar features:
+			- three word bag of words
+			- modification: preceded by adjective/adverb, modified by strongsubj/weaksubj
+			- structure features: relations based on dependency tree
+		- polarity classifier features: 
+			- word pror polarity
+			- negated or not
+			- modifies polarity
+			- general polarity (reverse polarity)
+			- positive/negative shifters
+
+
+Integrating Knowledge for Subjectivity Sense Labeling (Gyamfi, Wiebe, Mihalcea, Akkaya 2009)
+	relevant ideas:
+		- methods for assigning subjectivity labels to word senses focusing on NOUNS
+		- exploit vertical taxonomic links instead of just horizontal
+		- two steps:
+			1. identify subjective words
+			2. disambiguate their senses
+		- domain specific features 
+		- features:
+			- similarity between target sense and subjective seed set, info. associated
+			w/ their Least Common Subsumer, WordNet Domains used to particularize to domain
+			- domain subjectivity
+			- senses related to target and senses in seed set
+
+		- ablation studies good for showing effectiveness of individual features
+
+
+Word Sense and Subjectivity (Wiebe, Mihalcea 2006)
+	- main questions:
+		1. can word senses be labelled with subjectivity?
+		2. can subjectivity help improve word sense disambig.?	
+	- used the Distributionally Similar Words based on the parsed Brit. Nat. Corpus
+	- calculaate a subjectivity score as sum of similarity scores for words in DSW
+	- also used given w and DSW, subj. score = cond. prob. that any member of DSW is in 
+	subj. expression
+	- could use a role of senses in improving subjectivity simultaneously
+
+
+
+Initial plan:
+	1. sentiment classification
+		- seperate data into positive, negative, neutral, and both classifications
+		- possibly use existing tool for process
+		- 
+	2. subjectivity analysis
+		- annotate with appropriate WordNet synset and then look up
+		- information extraction
+		- clustering using most frequent subjective words as features
+
+
+
+
