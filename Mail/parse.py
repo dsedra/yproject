@@ -38,8 +38,9 @@ def parseFile(filename):
 
 			newEntry = Entry(date,rating,comment,review)
 			entryList.append(newEntry)
-			
-			
+
+	f.close()
+	
 	return entryList
 
 

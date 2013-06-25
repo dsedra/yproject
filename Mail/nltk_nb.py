@@ -20,7 +20,7 @@ trainfeats = negfeats + posfeats
 
 
 
-testStr = "I hate the app, its terrible!!!!!"
+testStr = "I love the app."
 testfeats = word_feats(nltk.word_tokenize(testStr))
 
 
