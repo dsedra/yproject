@@ -2,7 +2,6 @@
 # creates a list of objects with date, rating, comment, review fields
 
 import re, codecs
-
 def parseFile(filename):
 	class Entry:
 		def __init__(self, date, rating, comment,review):
@@ -40,7 +39,11 @@ def parseFile(filename):
 			newEntry = Entry(date,rating,comment,review)
 			entryList.append(newEntry)
 			
+			
 	return entryList
+
+
+
 
 
 if __name__ == '__main__':
