@@ -34,36 +34,44 @@ def nb_movierev():
 
 
 def nb_threeway():
-	f = codecs.open('gold_sent', 'r', 'utf-8')
+	f = codecs.open('gold_sent_500', 'r', 'utf-8')
 	pos = neg = neut = both = 0
 	posfeats = negfeats = bothfeats = neutfeats = []
 
+	count = 0
 	for line in f.readlines():
 		split = line.split('&&*%*&&')
 		review = split[0]
 		sclass = split[1]
 
+		count += 1
+
 		if 'pos' in sclass:
-			posfeats.append( (word_feats(nltk.word_tokenize(line)),'pos') )
+			posfeats.append( (word_feats(nltk.word_tokenize(line.lower())),'pos') )
+			pos += 1
 		elif 'neg' in sclass:
-			negfeats.append( (word_feats(nltk.word_tokenize(line)),'neg') )
+			negfeats.append( (word_feats(nltk.word_tokenize(line.lower())),'neg') )
+			neg += 1
 		elif 'neut' in sclass:
-			neutfeats.append( (word_feats(nltk.word_tokenize(line)),'neut') )
+			neutfeats.append( (word_feats(nltk.word_tokenize(line.lower())),'neut') )
+			neut += 1
 		elif 'both' in sclass:
-			bothfeats.append( (word_feats(nltk.word_tokenize(line)),'both') )
+			bothfeats.append( (word_feats(nltk.word_tokenize(line.lower())),'both') )
+			both += 1
 		else:
-			print 'aaaaa!!!'
+			print 'Unclassified entry on line %d'%(count)
 			break
+		
+	print pos, neg, neut, both
 
-
-	testStr = "I love the new layout and design. It is much better than the previous app!!"
+	testStr = "I love this wonderful app."
 	trainfeats = posfeats + negfeats + bothfeats + neutfeats
 	testfeats = word_feats(nltk.word_tokenize(testStr))
 	classifier = NaiveBayesClassifier.train(trainfeats)
 
 	print classifier.classify(testfeats)
-	#classifier.show_most_informative_features()
-	#print 'accuracy:', nltk.classify.util.accuracy(classifier, trainfeats)
+	classifier.show_most_informative_features()
+	print 'accuracy:', nltk.classify.util.accuracy(classifier, trainfeats)
 
 if __name__ == "__main__":
 	nb_threeway()

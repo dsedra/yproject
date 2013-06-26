@@ -15,5 +15,12 @@ def more_500():
 	for x in range(500):
 		f.write(elements[x].review+' &&*%*&& \n')
 
+def get_100():
+	f = codecs.open('gold_sent_500', 'r', 'utf-8')
+	f2 = codecs.open('gold_cross_100', 'w', 'utf-8')
+	for x in range(100):
+		f2.write(f.readline().split('&&*%*&&')[0]+'&&*%*&& \n')
+
+
 if __name__ == '__main__':
-	more_500()
+	get_100()
