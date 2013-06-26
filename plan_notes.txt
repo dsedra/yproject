@@ -32,3 +32,7 @@ Plan update -- | -- | --(06/21/2013)
 		3. Attempt to determine what features of the product are liked/disliked and group them to determine common issues across the sentiment class.
 		- At each step the accuracy must be determined using an annotated testing set.
 	 
+Action:
+	- Attempted to classify reviews by rating using user ratings as training/validation set. This did'nt work very well; ratings often contain multiple sentiments which makes classification based on rating difficult.
+	- Used movie reviews to classify into pos/neg. Appeared to work well, but of course many comments contain both positive and negative sentiments. Thus, more classes are necessary.
+	- Classified ~260 comments into pos/neg/neut/both and attempted to classify using unigram features. However, this doesn't seem to work very well. I will classify more data and see if that improves performance.
