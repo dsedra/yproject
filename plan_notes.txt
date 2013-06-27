@@ -36,3 +36,29 @@ Action:
 	- Attempted to classify reviews by rating using user ratings as training/validation set. This did'nt work very well; ratings often contain multiple sentiments which makes classification based on rating difficult.
 	- Used movie reviews to classify into pos/neg. Appeared to work well, but of course many comments contain both positive and negative sentiments. Thus, more classes are necessary.
 	- Classified ~260 comments into pos/neg/neut/both and attempted to classify using unigram features. However, this doesn't seem to work very well. I will classify more data and see if that improves performance.
+
+
+Work -- | -- | --(06/26/2013)
+
+Two annotator results of 100 reviews
+
+		D a n i e l
+
+	S			pos | neg | neut | both
+	a	pos 	45	|  3  |	 3   | 7
+	s	-------------------------------
+	s	neg 	16	|  1  |  0   | 3
+	d	-------------------------------
+	a	neut    6	|  3  |  1   | 0
+		-------------------------------
+		both    4 	|  5  |  1   | 2
+
+
+k = [0.49 - (0.412+0.024+0.005+0.0144)]/(1-0.455) = 0.0642 ?????
+R-kappa = 61.73
+
+
+
+
+
+
