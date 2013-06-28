@@ -1,11 +1,37 @@
 import nltk.classify.util
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
-import parse, codecs, happyfuntokenizing
+import parse, codecs, happyfuntokenizing, random
+from collections import  Counter
  
-def word_feats(words):
-	    return dict([(word, 5) for word in words])
 
+# derive feature dictionaries from word lists 
+# and length param
+def word_feats(words):
+	posWords = {'love', 'like', 'good', 'easy', 'functional', 'thanks', 'amazing', 'great', 'best'}
+	negWords = {'bad', 'hate', 'terrible', 'fail', 'worst', 'crash', 'freeze', 'nothing', 'dont', 'cant'}
+	bothWords = {'but', 'however', 'though', 'nevertheless', 'otherwise'}
+
+	feats = {}
+
+	if set(words).intersection(bothWords) or (set(words).intersection(posWords) and  set(words).intersection(negWords)):
+		feats['bothWord'] = True
+	else:
+		feats['bothWord'] = False
+
+	if set(words).intersection(posWords):
+		feats['posWord'] = True
+	else:
+		feats['posWord'] = False 
+
+	if set(words).intersection(negWords):
+		feats['negWord'] = True
+	else:
+		feats['negWord'] = False
+
+
+	return feats
+# movie reviews example test
 def nb_movierev():
 	negids = movie_reviews.fileids('neg')
 	posids = movie_reviews.fileids('pos')
@@ -24,11 +50,13 @@ def nb_movierev():
 	#print 'accuracy:', nltk.classify.util.accuracy(classifier, testfeats)
 	#classifier.show_most_informative_features()
 
+# tokenizer
 def my_tok(string):
 	tokens = nltk.word_tokenize(string)
 	#tokens = list(set(tokens))
 	return tokens
 
+# 
 def nb_threeway():
 	f = codecs.open('gold_sent_400', 'r', 'utf-8')
 	pos = neg = neut = both = 0
@@ -36,46 +64,55 @@ def nb_threeway():
 	tok = happyfuntokenizing.Tokenizer(preserve_case=False)
 
 	count = 0
+	lines = []
+
 	for line in f.readlines():
 		split = line.split('&&*%*&&')
 		review = split[0]
 		sclass = split[1]
-
+		lines.append(line)
 		count += 1
 
 		if 'pos' in sclass:
 			posfeats.append( (word_feats(my_tok(line.lower())),'pos') )
-			posfeats.append( (word_feats(nltk.util.bigrams(my_tok(line.lower()))),'pos') )
-			posfeats.append( (word_feats(nltk.util.ngrams(my_tok(line.lower()),3)),'pos') )
 			pos += 1
 		elif 'neg' in sclass:
 			negfeats.append( (word_feats(my_tok(line.lower())),'neg') )
-			negfeats.append( (word_feats(nltk.util.bigrams(my_tok(line.lower()))),'neg') )
-			negfeats.append( (word_feats(nltk.util.ngrams(my_tok(line.lower()),3)),'neg') )
 			neg += 1
 		elif 'neut' in sclass:
 			neutfeats.append( (word_feats(my_tok(line.lower())),'neut') )
-			neutfeats.append( (word_feats(nltk.util.bigrams(my_tok(line.lower()))),'neut') )
-			neutfeats.append( (word_feats(nltk.util.ngrams(my_tok(line.lower()),3)),'neut') )
 			neut += 1
 		elif 'both' in sclass:
 			bothfeats.append( (word_feats(my_tok(line.lower())),'both') )
-			bothfeats.append( (word_feats(nltk.util.bigrams(my_tok(line.lower()))),'both') )
-			bothfeats.append( (word_feats(nltk.util.ngrams(my_tok(line.lower()),3)),'both') )
 			both += 1
 		else:
 			print 'Unclassified entry on line %d'%(count)
 			break
-		
 
-	testStr = "I hate the folders in this app!!!!"
+	testStr = "i like this app and hate this app!!!!"
 	trainfeats = posfeats[:9*pos/10] + negfeats[:9*neg/10] + bothfeats[:9*both/10] + neutfeats[:9*neut/10]
 	testfeats = posfeats[9*pos/10:] + negfeats[9*neg/10:] + bothfeats[9*both/10:] + neutfeats[9*neut/10:]
 	classifier = NaiveBayesClassifier.train(trainfeats)
 
+	#match = 0
+	countDict = {}
+	for line in lines:
+		split = line.split('&&*%*&&')
+		review = split[0]
+		sclass = split[1]
+
+		choice = classifier.classify(word_feats(my_tok(review.lower())))
+		if  choice in sclass:
+			countDict[choice] = countDict.get(choice,0) + 1 
+		
+
+	print countDict
+	print neg,pos,both,neut
 	
-	classifier.show_most_informative_features()
-	print 'accuracy:', nltk.classify.util.accuracy(classifier, testfeats)
+	#classifier.show_most_informative_features()
+	#print 'accuracy:', nltk.classify.util.accuracy(classifier, testfeats)
+	#print classifier.classify(word_feats(my_tok(testStr)))
+
 
 if __name__ == "__main__":
 	nb_threeway()
