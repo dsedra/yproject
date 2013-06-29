@@ -8,16 +8,19 @@ from collections import  Counter
 # derive feature dictionaries from word lists 
 # and length param
 def word_feats(words):
-	posWords = {'love', 'like', 'good', 'easy', 'functional', 'thanks', 'amazing', 'great', 'best'}
-	negWords = {'bad', 'hate', 'terrible', 'fail', 'worst', 'crash', 'freeze', 'nothing', 'dont', 'cant'}
-	bothWords = {'but', 'however', 'though', 'nevertheless', 'otherwise'}
+	posWords = {'love', 'like', 'good', 'easy', 'functional', 'thanks', 'amazing', 'great', 'best', 'fast'}
+	negWords = {'bad', 'hate', 'terrible', 'fail', 'worst', 'crash', 'freeze', 'nothing', 'dont', 'cant', 'slow', 'not', 'fix'}
+	bothWords = {'but', 'however', 'though', 'nevertheless'}
 
 	feats = {}
 
-	if set(words).intersection(bothWords) or (set(words).intersection(posWords) and  set(words).intersection(negWords)):
-		feats['bothWord'] = True
+	if (set(words)&bothWords):# or (set(words)&(posWords&negWords)):
+		feats['bothWord'] = 'True'
+		return feats
 	else:
 		feats['bothWord'] = False
+
+		
 
 	if set(words).intersection(posWords):
 		feats['posWord'] = True
@@ -28,6 +31,16 @@ def word_feats(words):
 		feats['negWord'] = True
 	else:
 		feats['negWord'] = False
+
+
+
+	#if not (set(words)&(bothWords|posWords|negWords)):
+	#	feats['neutWord'] = True
+	#else:
+	#	feats['neutWord'] = False
+
+	#for word in words:
+	#	feats[word] = 'True'
 
 
 	return feats
@@ -103,11 +116,13 @@ def nb_threeway():
 
 		choice = classifier.classify(word_feats(my_tok(review.lower())))
 		if  choice in sclass:
-			countDict[choice] = countDict.get(choice,0) + 1 
-		
+			countDict[choice] = countDict.get(choice,0) + 1
+			#print line
+			 
+
 
 	print countDict
-	print neg,pos,both,neut
+	print both,pos,neg,neut
 	
 	#classifier.show_most_informative_features()
 	#print 'accuracy:', nltk.classify.util.accuracy(classifier, testfeats)

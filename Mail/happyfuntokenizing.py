@@ -221,4 +221,4 @@ if __name__ == '__main__':
         print "======================================================================"
         print s
         tokenized = tok.tokenize(s)
-        print "\n".join(tokenized)
+        print tokenized
