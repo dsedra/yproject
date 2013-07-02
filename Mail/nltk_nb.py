@@ -12,15 +12,13 @@ def word_feats(words):
 	negWords = {'bad', 'hate', 'terrible', 'fail', 'worst', 'crash', 'freeze', 'nothing', 'dont', 'cant', 'slow', 'not', 'fix'}
 	bothWords = {'but', 'however', 'though', 'nevertheless'}
 
-	feats = {}
+	feats = {} #dict([(word,'True') for word in words])
+
 
 	if (set(words)&bothWords):# or (set(words)&(posWords&negWords)):
-		feats['bothWord'] = 'True'
-		return feats
+		feats['bothWord'] = True
 	else:
 		feats['bothWord'] = False
-
-		
 
 	if set(words).intersection(posWords):
 		feats['posWord'] = True
@@ -32,18 +30,9 @@ def word_feats(words):
 	else:
 		feats['negWord'] = False
 
-
-
-	#if not (set(words)&(bothWords|posWords|negWords)):
-	#	feats['neutWord'] = True
-	#else:
-	#	feats['neutWord'] = False
-
-	#for word in words:
-	#	feats[word] = 'True'
-
-
 	return feats
+
+
 # movie reviews example test
 def nb_movierev():
 	negids = movie_reviews.fileids('neg')
@@ -53,7 +42,7 @@ def nb_movierev():
 	posfeats = [(word_feats(movie_reviews.words(fileids=[f])), 'pos') for f in posids]
 	 
 	trainfeats = negfeats + posfeats
-	testfeats = word_feats(my_tok(testStr))
+	testfeats = word_feats(my_tok('very good indeed',1))
 
 
 	print 'train on %d instances, test on %d instances' % (len(trainfeats), len(testfeats))
@@ -64,9 +53,12 @@ def nb_movierev():
 	#classifier.show_most_informative_features()
 
 # tokenizer
-def my_tok(string):
-	tokens = nltk.word_tokenize(string)
-	#tokens = list(set(tokens))
+def my_tok(string, num):
+	if num == 1:
+		tokens = nltk.word_tokenize(string)
+	else:
+		tokens = nltk.ngrams(nltk.word_tokenize(string),num)
+	
 	return tokens
 
 # 
@@ -87,48 +79,68 @@ def nb_threeway():
 		count += 1
 
 		if 'pos' in sclass:
-			posfeats.append( (word_feats(my_tok(line.lower())),'pos') )
+			posfeats.append( (word_feats(my_tok(review.lower(),1)),'pos') )
+			#posfeats.append( (word_feats(my_tok(review.lower(),2)),'pos') )
+			#posfeats.append( (word_feats(my_tok(review.lower(),3)),'pos') )
 			pos += 1
 		elif 'neg' in sclass:
-			negfeats.append( (word_feats(my_tok(line.lower())),'neg') )
+			negfeats.append( (word_feats(my_tok(review.lower(),1)),'neg') )
+			#negfeats.append( (word_feats(my_tok(review.lower(),2)),'neg') )
+			#negfeats.append( (word_feats(my_tok(review.lower(),3)),'neg') )
 			neg += 1
 		elif 'neut' in sclass:
-			neutfeats.append( (word_feats(my_tok(line.lower())),'neut') )
+			neutfeats.append( (word_feats(my_tok(review.lower(),1)),'neut') )
+			#neutfeats.append( (word_feats(my_tok(review.lower(),2)),'neut') )
+			#neutfeats.append( (word_feats(my_tok(line.lower(),3)),'neut') )
 			neut += 1
 		elif 'both' in sclass:
-			bothfeats.append( (word_feats(my_tok(line.lower())),'both') )
+			bothfeats.append( (word_feats(my_tok(review.lower(),1)),'both') )
+			#bothfeats.append( (word_feats(my_tok(review.lower(),2)),'both') )
+			#bothfeats.append( (word_feats(my_tok(review.lower(),3)),'both') )
 			both += 1
 		else:
 			print 'Unclassified entry on line %d'%(count)
 			break
 
+	print bothfeats
 	testStr = "i like this app and hate this app!!!!"
 	trainfeats = posfeats[:9*pos/10] + negfeats[:9*neg/10] + bothfeats[:9*both/10] + neutfeats[:9*neut/10]
-	testfeats = posfeats[9*pos/10:] + negfeats[9*neg/10:] + bothfeats[9*both/10:] + neutfeats[9*neut/10:]
+	#testfeats = posfeats[9*pos/10:] + negfeats[9*neg/10:] + bothfeats[9*both/10:] + neutfeats[9*neut/10:]
 	classifier = NaiveBayesClassifier.train(trainfeats)
 
 	#match = 0
+	matchCountDict = {}
 	countDict = {}
 	for line in lines:
 		split = line.split('&&*%*&&')
 		review = split[0]
 		sclass = split[1]
 
-		choice = classifier.classify(word_feats(my_tok(review.lower())))
+		testfeats = {}
+		testfeats = word_feats(my_tok(review.lower(),1))
+		#testfeats.update(word_feats(my_tok(review.lower(),2)))
+		#testfeats.update(word_feats(my_tok(review.lower(),3)))
+
+		choice = classifier.classify(testfeats)
+
+		print review, choice
 		if  choice in sclass:
-			countDict[choice] = countDict.get(choice,0) + 1
+			matchCountDict[choice] = matchCountDict.get(choice,0)+1
 			#print line
-			 
 
+		countDict[choice] = countDict.get(choice,0)+1
+		
 
+	print matchCountDict
 	print countDict
 	print both,pos,neg,neut
-	
-	#classifier.show_most_informative_features()
+
+	classifier.show_most_informative_features()
 	#print 'accuracy:', nltk.classify.util.accuracy(classifier, testfeats)
 	#print classifier.classify(word_feats(my_tok(testStr)))
 
 
 if __name__ == "__main__":
 	nb_threeway()
+
 
