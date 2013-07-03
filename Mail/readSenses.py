@@ -1,4 +1,6 @@
-#read in SentiWordnet 3.0
+# read in SentiWordnet 3.0 and create a dictionary from 
+# (word,pos) -> (posScore,negScore) which is then pickled
+import pickle
 
 f = open('sw3.txt', 'r')
 
@@ -12,6 +14,8 @@ class Syn:
 		self.syns = syns
 
 synList = []
+synDict = {}
+revList = []
 
 for line in f.readlines():
 	splits = line.split('\t')
@@ -19,12 +23,22 @@ for line in f.readlines():
 	syns = []
 	for ele in splits[4].split():
 		syns.append(ele.split('#')[0])
+
+	for syn in syns:
+		(a,b) = synDict.get((syn,splits[0]),(0,0))
+		synDict[(syn,splits[0])] = (a+float(splits[2]),b+float(splits[3]))
 	
-	newSyn = Syn(splits[0],splits[1],splits[2],splits[3],syns,splits[5])
-	synList.append(newSyn)
 
 
-for syn in synList:
-	for ele in syn.syns:
-		if ele == 'hate':
-			print syn.posScore,syn.negScore
+for key in synDict.keys():
+	if synDict[key] == (0,0):
+		synDict.pop(key)
+
+
+pickle.dump(synDict, open('sentiment_score.pickle', 'wb'))
+
+
+
+f.close()
+r.close()
+
