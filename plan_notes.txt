@@ -64,6 +64,9 @@ Work -- | -- | -- (06/27/2013)
 	Bigrams and trigrams w/ pos tagging appear to be worse. Thus, the best accuracy has been with simple uni, bi, tri
 
 	
+Work -- | -- | -- (07/02/2013)
+
+	I attempted to sum up the positive and negative scores from SentiWordnet 3.0. The results were very inconclusive as the groups overlapped extensively (pos/neg being the most dichotomized). I am working to get a semantic analysis tool to work to have a more specific score for each word form. Also, I need to figure out a way to deal with negated phrases. 
 
 
 
