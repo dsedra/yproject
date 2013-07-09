@@ -20,13 +20,12 @@ revList = []
 for line in f.readlines():
 	splits = line.split('\t')
 
-	syns = []
-	for ele in splits[4].split():
-		syns.append(ele.split('#')[0])
+	syns = [ele for ele in splits[4].split()]
 
 	for syn in syns:
-		(a,b) = synDict.get((syn,splits[0]),(0,0))
-		synDict[(syn,splits[0])] = (a+float(splits[2]),b+float(splits[3]))
+		synDict[(syn,splits[0])] = (float(splits[2]),float(splits[3]))
+		
+
 	
 
 
@@ -40,5 +39,5 @@ pickle.dump(synDict, open('sentiment_score.pickle', 'wb'))
 
 
 f.close()
-r.close()
+
 

@@ -1,42 +1,43 @@
 # use score tuple to score reviews in a svm
-import parse, pickle, nltk
+import parse, pickle, nltk, negate
 
 def svm():
 	# load the sentiment score file with (word,pos) -> (posScore,negScore) dictionary
 	# and the (review,sentiment) pair list
 	synDict = pickle.load(open('sentiment_score.pickle','rb'))
-	revs = pickle.load(open('review_sent.pickle','rb'))
+	annot = pickle.load(open('sent_400_wspos.pickle','rb'))
 
-	keyList = map(lambda (a,b):a,synDict.keys())
-	print 'too' in keyList
-	count = 0
-	scores = {'pos':[],'neg':[],'neut':[],'both':[]}
-
-	for (rev,sent) in revs:
-		scoreList = []
-		found = False
-		for (word,pos) in nltk.pos_tag(nltk.word_tokenize(rev.lower())):
-			#if 'JJ' in pos and (word,'a') in synDict:
-			#	scoreList.append(synDict[(word,'a')])
-			#elif 'NN' in pos and (word,'n') in synDict:
-			#	scoreList.append(synDict[(word,'n')])
-			#elif 'V' in pos and (word,'v') in synDict:
-			#	scoreList.append(synDict[(word,'v')])
-			if (word,'a') in synDict or (word,'v') in synDict or (word,'n') in synDict or (word,'r') in synDict:
-				found = True
-
-		if not found:
-			count += 1
-			print rev,sent
-		#if len(scoreList) != 0:
-		#	scores[sent].append(reduce(lambda (a,b),(c,d):(a+c,b+d), scoreList))
-
-	#print map (lambda (a,b):b, scores['neut'])
-	print count
-
-
-
-
+	poscount = bothcount = 0
+	posTot = 0
+	bothTot = 0
+	for line,sent in annot:
+		score = (0,0)
 		
+
+		string = ''
+		for word in line.split():
+			string += word.split('#')[0]+' '
+
+		neg = negate.negating(string.strip(' '))
+
+		# catch empty case, simpler than re-pickling
+		if neg == []:
+			continue
+
+		for i,word in enumerate(line.split()):
+			tri = word.split('#')
+			if len(tri) == 3:
+				pair = (tri[0]+'#'+tri[2],tri[1])
+				(a,b) = score
+				(c,d) = synDict.get(pair,(0,0))
+				tempscore = (a+c,b+d)
+			
+			if 'NOT' in neg[i]:
+				tempscore = (b+d, a+c) # set to reverse value b/c inverted meaning
+				
+			score = tempscore
+
+			
+
 if __name__ == '__main__':
 	svm()
