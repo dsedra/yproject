@@ -140,7 +140,9 @@ def nb_threeway():
 def nb_bi():
 	synDict = pickle.load(open('sentiment_score.pickle','rb'))
 	annot = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
-	#random.shuffle(annot)
+	stopList = ['and','the','or','of','is']
+
+	random.shuffle(annot)
 	annot.remove(('#NR \n','pos \n'))
 
 	posNum = negNum = posaNum = negaNum = 0
@@ -152,8 +154,13 @@ def nb_bi():
 		score = (0,0)
 
 		string = ''
+		words = []
+
 		for word in line.strip().split():
-			string += word.split('#')[0]+' '
+			words.append(word.split('#')[0])
+
+		string = ' '.join(words)
+
 
 		neg = negate.negating(string.strip(' '))
 
@@ -175,7 +182,10 @@ def nb_bi():
 		(p,n) = score
 
 		# construct features dictionary
-		feats = {'pos':p, 'neg':n}
+		feats = {} #{'pos':p, 'neg':n}
+		for word in words:
+			if word not in stopList:
+				feats[word] = True
 		scores.append(feats)
 
 	
@@ -228,10 +238,24 @@ def nb_bi():
 	#print 'claim: ',posNum,' ',negNum
 	#print 'actual: ',posaNum,' ',negaNum
 
-def word_feats_bi():
-	pass
+def junk():
+	stuff = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
+
+	posSet = {}
+	negSet = {}
+
+	for line,sent in stuff:
+		for word in line.split(' '):
+			if 'pos' in sent:
+				posSet[word.split('#')[0]] = posSet.get(word.split('#')[0],0) + 1
+			else:
+				negSet[word.split('#')[0]] = negSet.get(word.split('#')[0],0) + 1
+
+	print set(negSet.keys()) - set(posSet.keys())
+
 
 if __name__ == "__main__":
 	nb_bi()
+	#junk()
 
 
