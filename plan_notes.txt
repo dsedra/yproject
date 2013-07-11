@@ -67,6 +67,9 @@ Work -- | -- | -- (06/27/2013)
 Work -- | -- | -- (07/02/2013)
 
 	I attempted to sum up the positive and negative scores from SentiWordnet 3.0. The results were very inconclusive as the groups overlapped extensively (pos/neg being the most dichotomized). I am working to get a semantic analysis tool to work to have a more specific score for each word form. Also, I need to figure out a way to deal with negated phrases. 
+Work -- | -- | -- (07/10/2013)
+
+	Have incorporated the SentiWordNet 3.0 scores to form ordered pairs. However, I am having a lot of difficulty figuring out how to use the various SVM packages. The most successful thus far has been the pysvmlight. I will probably go back to Naive Bayes for simplicity and more features. At Heemeng's request I have reannotated the data removing the neut/both classes. This will hopefully yeald a higher level of accuracy  than the four classes. I am worried that I may not make sufficient progress (perhaps my goals were to ambitious, but I don't think so).
 
 
 

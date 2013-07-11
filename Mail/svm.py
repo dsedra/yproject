@@ -10,6 +10,8 @@ def svm():
 	posTot = 0
 	bothTot = 0
 
+	print annot
+
 	# 0 -> pos, 1 -> neg, 2 -> both, 3 -> neut
 	data = {'pos':[],'neg':[],'both':[],'neut':[]}
 	strToNum = {'pos':0,'neg':1,'both':2,'neut':3}
@@ -70,5 +72,7 @@ def svm():
 		#print '%.8f' % p
 		pass	
 
+
 if __name__ == '__main__':
-	svm()
+	#svm()
+	temp()
