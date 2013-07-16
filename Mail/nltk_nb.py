@@ -165,18 +165,7 @@ def nb_bi():
 		neg = negate.negating(string.strip(' '))
 
 
-		for i,word in enumerate(line.split()):
-			tri = word.split('#')
-			tempscore = (0,0)
-			if len(tri) == 3: # i.e. a word in senti dictionary
-				pair = (tri[0]+'#'+tri[2],tri[1])
-				tempscore = synDict.get(pair,(0,0))
-
-				if 'NOT' in neg[i]:
-					tempscore = (tempscore[1],tempscore[0])
-					#print tempscore,junk
-
-			score = (score[0]+tempscore[0],score[1]+tempscore[1])
+		
 
 
 		(p,n) = score
@@ -238,24 +227,68 @@ def nb_bi():
 	#print 'claim: ',posNum,' ',negNum
 	#print 'actual: ',posaNum,' ',negaNum
 
-def junk():
-	stuff = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
+def nb_vector():
+	annot = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
+	random.shuffle(annot)
 
-	posSet = {}
-	negSet = {}
+	length = 3*len(annot)/4
+	train = annot[:length]
+	test = annot[length:]
 
-	for line,sent in stuff:
-		for word in line.split(' '):
+	posDict = {}
+	negDict = {}
+	npos = nneg = 0
+
+	for line,sent in train:
+		for wordTag in line.strip().split(' '):
+			word = wordTag.split('#')[0]
+
 			if 'pos' in sent:
-				posSet[word.split('#')[0]] = posSet.get(word.split('#')[0],0) + 1
+				npos += 1
+				posDict[word] = posDict.get(word,0) + 1
 			else:
-				negSet[word.split('#')[0]] = negSet.get(word.split('#')[0],0) + 1
+				nneg += 1
+				negDict[word] = negDict.get(word,0) + 1
 
-	print set(negSet.keys()) - set(posSet.keys())
+	print posDict
+
+	classifier = NaiveBayesClassifier.train([(posDict,'pos'),(negDict,'neg')])
 
 
+	correct = pos = 0
+
+	for line,sent in test:
+		wordDict = {}
+
+		for wordTag in line.lower().split(' '):
+			word = wordTag.split('#')[0]
+			wordDict[word] = wordDict.get(word,0) + 1
+
+		res = classifier.classify(wordDict)
+		if res == 'neg' and res not in sent:
+			pneg = classifier.prob_classify(wordDict).prob('neg')
+			print pneg, 1-pneg
+
+
+
+		
+def calcScoreVec():
+	dic = {}
+	for line in open('subjclueslen1.tff','r').readlines():
+		lists = line.split()
+		newList = []
+
+		for ele in lists:
+			newList.append(ele.split('=')[1])
+
+		
+		dic[newList[2],newList[3]] = (newList[5],newList[0],newList[4])
+	print dic
+	
+	
 if __name__ == "__main__":
-	nb_bi()
-	#junk()
+	#nb_bi()
+	#nb_vector()
+	calcScoreVec()
 
 
