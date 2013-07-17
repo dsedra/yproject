@@ -3,7 +3,7 @@ from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
 import parse, codecs, happyfuntokenizing, random
 from collections import  Counter
- 
+from nltk import PorterStemmer 
 
 # derive feature dictionaries from word lists 
 # and length param
@@ -164,10 +164,6 @@ def nb_bi():
 
 		neg = negate.negating(string.strip(' '))
 
-
-		
-
-
 		(p,n) = score
 
 		# construct features dictionary
@@ -229,6 +225,8 @@ def nb_bi():
 
 def nb_vector():
 	annot = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
+	synDict = pickle.load(open('sentiment_score.pickle','rb'))
+
 	random.shuffle(annot)
 
 	length = 3*len(annot)/4
@@ -271,21 +269,139 @@ def nb_vector():
 
 
 
-		
+## uses constructFeats to build feature vectors	
 def calcScoreVec():
-	dic = {}
-	for line in open('subjclueslen1.tff','r').readlines():
-		lists = line.split()
-		newList = []
+	dic = pickle.load(open('sentiment_ranking.pickle','rb'))
+	synDict = pickle.load(open('sentiment_score.pickle','rb'))
 
-		for ele in lists:
-			newList.append(ele.split('=')[1])
+	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
+	annotFancy = pickle.load(open('sent_400_wspos_bi.pickle','rb'))
+	pairList = []
 
+	for i,x in enumerate(annotPlain):
+		pairList.append((x,annotFancy[i]))
+
+
+	random.shuffle(pairList)
+
+	lenTrain = 5*len(pairList)/6
+	train = pairList[:lenTrain]
+	test = pairList[lenTrain:]
+
+	# ---------------- begin first classifier --------------- #
+
+	training1 = []
+	testing1 = []
+
+
+	for pair in train:
+		line,sent = pair[0]
+		training1.append(constructFeats(line,sent,dic))
+
+
+
+	# --------------- begin second classifier -------------- #
+
+	for i,pair in enumerate(train):
+		line,sent = pair[1]
+		training1[i][0].update(constructFeats2(line,sent,synDict))
+	
+
+
+	# --------------- compile stats ---------------- #
+
+	classifier = NaiveBayesClassifier.train(training1)
+
+	count = total = 0
+	statsList = []
+	for pair in test:
+		line,sent = pair[0]
+		feats = constructFeats(line,sent,dic)
+		feats[0].update(constructFeats2(pair[1][0],sent,synDict))
 		
-		dic[newList[2],newList[3]] = (newList[5],newList[0],newList[4])
-	print dic
+		ppos = classifier.prob_classify(feats[0]).prob('pos')
+		clas = classifier.classify(feats[0])
+
+		statsList.append((sent,clas,ppos,1-ppos))
+
+	stats(statsList)
+
+# construct feats from SentiWordNet dict
+def constructFeats2(line,sent,synDict):
+	feats = {}
+
+	for word in line.strip().split(' '):
+		parts = word.split('#')
+
+		if len(parts) == 3:
+			feats[word] = synDict.get((parts[0]+'#'+parts[2],parts[1]),(0,0))
+
+	return feats
+
+# construct feats for subj clues dict
+def constructFeats(line,sent,dic):
+	feats = {}
+	mapping = {('weaksubj','positive'):1,('strongsubj','positive'):2,('weaksubj','negative'):-1,('strongsubj','negative'):-2}
+	sumscore = 0
+
+	for word,pos in nltk.pos_tag(nltk.word_tokenize(line.lower())):
+		score = None
+
+		if 'NN' in pos:
+			score = lookup(dic,word,'noun')
+		elif 'JJ' in pos:
+			score = lookup(dic,word,'adj')
+		elif 'VB' in pos:
+			score = lookup(dic,word,'verb')
+		elif 'RB' in pos:
+			score = lookup(dic,word,'adverb')
+
+		if score:
+			(e1,e2,e3) = score
+			val = mapping.get((e2,e1),0)
+			feats[word] = val
+
+			sumscore += val
+			
+	feats['sum'] = sumscore
+
+	for word in nltk.word_tokenize(line.lower()):
+		if word not in feats:
+			feats[word] = True
 	
+	return (feats,sent)	
+
 	
+def stats(tuples):
+	accuracy = pos = neg = posc = negc = 0
+	for ele in tuples:
+		if ele[0] in ele[1]:
+			accuracy += 1
+		if 'pos' in ele[0]:
+			pos += 1
+			if 'pos' in ele[1]:
+				posc += 1
+		if 'neg' in ele[0]:
+			neg += 1
+			if 'neg' in ele[1]:
+				negc += 1
+	print len(tuples),'\t',posc,pos,'\t',negc,neg,'\t',accuracy
+
+def lookup(dict,word,pos):
+	if (word,pos) in dict:
+		return dict[(word,pos)]
+	elif (word,'anypos') in dict:
+		return dict[(word,'anypos')]
+	elif (word,'adj') in dict:
+		return dict[(word,'adj')]
+	elif (word,'noun') in dict:
+		return dict[(word,'noun')]
+	elif (word,'verb') in dict:
+		return dict[(word,'verb')]
+	elif (word,'adverb') in dict:
+		return dict[(word,'adverb')]
+
+
 if __name__ == "__main__":
 	#nb_bi()
 	#nb_vector()
