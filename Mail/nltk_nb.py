@@ -293,7 +293,6 @@ def calcScoreVec():
 	training1 = []
 	testing1 = []
 
-
 	for pair in train:
 		line,sent = pair[0]
 		training1.append(constructFeats(line,sent,dic))
@@ -302,41 +301,124 @@ def calcScoreVec():
 
 	# --------------- begin second classifier -------------- #
 
-	for i,pair in enumerate(train):
+	training2 = []
+	testing2 = []
+
+	for pair in train:
 		line,sent = pair[1]
-		training1[i][0].update(constructFeats2(line,sent,synDict))
+		training2.append(constructFeats2(line,sent,synDict))
+
+
+	# --------------- begin selection classifier ----------- #
+	training3 = constructFeats3(pairList,train)
+	testing3 = constructFeats3(pairList,test)
 	
+	classifier3 = NaiveBayesClassifier.train(training3)
 
-
+	print 'accuracy:', nltk.classify.util.accuracy(classifier3, testing3)
 	# --------------- compile stats ---------------- #
 
-	classifier = NaiveBayesClassifier.train(training1)
+	#classifier2 = NaiveBayesClassifier.train(training2)
+	#classifier1 = NaiveBayesClassifier.train(training1)
+	#classifier3 = NaiveBayesClassifier.train(training3)
 
-	count = total = 0
-	statsList = []
-	for pair in test:
-		line,sent = pair[0]
-		feats = constructFeats(line,sent,dic)
-		feats[0].update(constructFeats2(pair[1][0],sent,synDict))
+
+	#statsList = []
+	
+	#for pair in test:
+	#	line0,sent0 = pair[0]
+	#	line1,sent1 = pair[1]
+
+	#	feats1 = constructFeats(line0,sent0,dic)
+	#	feats2 = constructFeats2(line1,sent1.strip(),synDict)
+
+		#feats[0].update(constructFeats2(pair[1][0],sent,synDict))
+	#	feats3 = constructFeats3(pairList,test)	
+	#	ppos1 = classifier1.prob_classify(feats1[0]).prob('pos')
+	#	clas1 = classifier1.classify(feats1[0])
+
+	#	ppos2 = classifier2.prob_classify(feats2[0]).prob('pos\n')
+	#	clas2 = classifier2.classify(feats2[0])
+
 		
-		ppos = classifier.prob_classify(feats[0]).prob('pos')
-		clas = classifier.classify(feats[0])
+	#	statsList.append((sent0,clas1,clas2.strip(),ppos1,ppos2))
 
-		statsList.append((sent,clas,ppos,1-ppos))
+	#twoStats(statsList)
 
-	stats(statsList)
+
+
+# work with most informative ?? features
+def constructFeats3(pairList,whichever):
+	from nltk.probability import FreqDist, ConditionalFreqDist
+	from nltk.metrics import BigramAssocMeasures
+
+
+	word_fd = FreqDist()
+	label_word_fd = ConditionalFreqDist()
+
+	for pair in pairList:
+		line,sent = pair[0]
+		for word in nltk.word_tokenize(line):
+			word_fd.inc(word.lower())
+			label_word_fd[sent].inc(word.lower())
+
+	pos_word_count = label_word_fd['pos'].N()
+	neg_word_count = label_word_fd['neg'].N()
+	total_word_count = pos_word_count + neg_word_count
+
+
+	word_scores = {}
+	for word, freq in word_fd.iteritems():
+		pos_score = BigramAssocMeasures.chi_sq(label_word_fd['pos'][word],(freq, pos_word_count),total_word_count)
+		neg_score = BigramAssocMeasures.chi_sq(label_word_fd['neg'][word],(freq, neg_word_count),total_word_count)
+		word_scores[word] = pos_score + neg_score
+ 
+	best = sorted(word_scores.iteritems(), key=lambda (w,s): s, reverse=True)[:18]
+	bestwords = set([w for w, s in best])
+	
+	training3 = []
+	testing3 = []
+
+	for pair in whichever:
+		line,sent = pair[0]
+		training3.append((best_word_feats(nltk.word_tokenize(line.lower()),bestwords),sent))
+
+	return training3
+
+def best_word_feats(words,bestwords):
+    return dict([(word, True) for word in words if word in bestwords])
 
 # construct feats from SentiWordNet dict
 def constructFeats2(line,sent,synDict):
 	feats = {}
+	score = (0,0)
 
+	words = []
 	for word in line.strip().split(' '):
+		words.append(word.split('#')[0])
+
+	neg = negate.negating(' '.join(words))
+
+
+
+
+	for i,word in enumerate(line.strip().split(' ')):
 		parts = word.split('#')
 
 		if len(parts) == 3:
-			feats[word] = synDict.get((parts[0]+'#'+parts[2],parts[1]),(0,0))
+			#feats[parts[0]] = synDict.get((parts[0]+'#'+parts[2],parts[1]),(0,0))
+		 	a,b = synDict.get((parts[0]+'#'+parts[2],parts[1]),(0,0))
 
-	return feats
+		 	if 'NOT' in neg[i]:
+		 		score = (score[0]+b,score[1]+a)
+		 	else:
+		 		score = (score[0]+a,score[1]+b)
+
+		
+	feats['ps'] = score[0]
+	feats['ns'] = score[1]
+
+	return (feats,sent)
 
 # construct feats for subj clues dict
 def constructFeats(line,sent,dic):
@@ -362,16 +444,39 @@ def constructFeats(line,sent,dic):
 			feats[word] = val
 
 			sumscore += val
+
 			
 	feats['sum'] = sumscore
 
-	for word in nltk.word_tokenize(line.lower()):
-		if word not in feats:
-			feats[word] = True
 	
 	return (feats,sent)	
 
 	
+# takes sent,clas1,clas2,ppos1,ppos2
+def twoStats(tuples):
+
+	statsList = []
+
+	for ele in tuples:
+		sent,c1,c2,p1,p2 = ele
+		best = ''
+
+		if mostConf(c1,p1) > mostConf(c2,p2):
+			statsList.append((sent,c1,p1,1-p1))
+		else:
+			statsList.append((sent,c2,p2,1-p2))
+
+	stats(statsList)
+		
+
+def mostConf(sent,ppos):
+	if 'pos' in sent:
+		return ppos
+	else:
+		return 1-ppos
+
+
+# takes sent,class,ppos,pneg for one classifier
 def stats(tuples):
 	accuracy = pos = neg = posc = negc = 0
 	for ele in tuples:
@@ -386,6 +491,9 @@ def stats(tuples):
 			if 'neg' in ele[1]:
 				negc += 1
 	print len(tuples),'\t',posc,pos,'\t',negc,neg,'\t',accuracy
+
+
+
 
 def lookup(dict,word,pos):
 	if (word,pos) in dict:
