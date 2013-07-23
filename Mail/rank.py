@@ -1,4 +1,4 @@
-import pickle, nltk, math
+import pickle, nltk, math, random
 from numpy import *
 from operator import itemgetter
 
@@ -73,18 +73,68 @@ def tfIDF():
 		for term in line_fd[i]:
 			tfidf = tf.get((term,i),0)*idf.get(term,0)
 			#scores[term] = scores.get(term,0) + tfidf
-			temp += tfidf/float(len(line_fd[i]))
+			temp += tfidf/math.log(len(line_fd[i]) + 1)
 
 
 		scores.append((pos[i],temp))
 
-	print sorted(scores,key=itemgetter(1))		
+	print sorted(scores,key=itemgetter(1))	
+
+def test():
+	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
+
+	pairs = []
+	for line,sent in annotPlain:
+		nouns = set()
+		for word,pos in nltk.pos_tag(nltk.word_tokenize(line)):
+			if 'NN' in pos:
+				nouns.add(word.lower())
+
+		pairs.append((line,nouns))
 
 
-		
 
-	
+
+	#sets = map(lambda x: x[1], pairs)
+
+	sets = [{1,2},{2,3},{6,4}]
+
+
+
+def foo(l, num, num2):
+	if (num-1) >= len(l):
+		return
+	if (num2) >= len(l):
+		foo(l, num+1, num+2)
+		return
+	if len(l) < 2:
+		return
+	print num
+	print num2
+	inter = l[num] & l[num2]
+	if len(inter) > 0:
+		l = l[:num] + [l[num] | l[num2]] + l[num2+1:]
+		foo(l, num, num2)
+		return
+	else:
+		foo(l, num, num2+1)
+		return
+	return
+
+
+def containsOver(listi):
+	for i,ele1 in enumerate(listi):
+		for j,ele2 in enumerate(listi):
+			if i != j and ele1&ele2:
+				return True
+	return False
 
 
 if __name__ == '__main__':
-	tfIDF()
+	sets = [{1,2},{3,4},{4,5}]#[{1,2},{2,3},{6,4}]
+	print foo(sets,0,1)
+	print sets
+
+
+
+

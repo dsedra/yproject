@@ -400,8 +400,6 @@ def constructFeats2(line,sent,synDict):
 	neg = negate.negating(' '.join(words))
 
 
-
-
 	for i,word in enumerate(line.strip().split(' ')):
 		parts = word.split('#')
 
