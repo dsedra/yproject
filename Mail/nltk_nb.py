@@ -4,6 +4,8 @@ from nltk.corpus import movie_reviews
 import parse, codecs, happyfuntokenizing, random
 from collections import  Counter
 from nltk import PorterStemmer 
+from nltk.metrics import BigramAssocMeasures
+from nltk.collocations import BigramCollocationFinder
 
 # derive feature dictionaries from word lists 
 # and length param
@@ -369,8 +371,8 @@ def constructFeats3(pairList,whichever):
 
 	word_scores = {}
 	for word, freq in word_fd.iteritems():
-		pos_score = BigramAssocMeasures.chi_sq(label_word_fd['pos'][word],(freq, pos_word_count),total_word_count)
-		neg_score = BigramAssocMeasures.chi_sq(label_word_fd['neg'][word],(freq, neg_word_count),total_word_count)
+		pos_score = BigramAssocMeasures.dice(label_word_fd['pos'][word],(freq, pos_word_count),total_word_count)
+		neg_score = BigramAssocMeasures.dice(label_word_fd['neg'][word],(freq, neg_word_count),total_word_count)
 		word_scores[word] = pos_score + neg_score
  
 	best = sorted(word_scores.iteritems(), key=lambda (w,s): s, reverse=True)[:18]
@@ -383,7 +385,21 @@ def constructFeats3(pairList,whichever):
 		line,sent = pair[0]
 		training3.append((best_word_feats(nltk.word_tokenize(line.lower()),bestwords),sent))
 
+	# ----------------- deal w/ bigrams --------------- #
+	for pair in whichever:
+		line,sent = pair[0]
+		training3.append((best_bigram_word_feats(label_word_fd[sent].items(),bestwords),sent))
+	
+
 	return training3
+
+def best_bigram_word_feats(words, bestwords, score_fn=BigramAssocMeasures.chi_sq, n=200):
+    bigram_finder = BigramCollocationFinder.from_words(words)
+    bigrams = bigram_finder.nbest(score_fn, n)
+    d = dict([(bigram, True) for bigram in bigrams])
+    d.update(best_word_feats(words,bestwords))
+    return d
+
 
 def best_word_feats(words,bestwords):
     return dict([(word, True) for word in words if word in bestwords])

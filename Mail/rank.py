@@ -80,60 +80,84 @@ def tfIDF():
 
 	print sorted(scores,key=itemgetter(1))	
 
-def test():
+# create a graph file where edges are simple overlap
+def createGraph():
 	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
 
-	pairs = []
+	posList = []
+
 	for line,sent in annotPlain:
-		nouns = set()
-		for word,pos in nltk.pos_tag(nltk.word_tokenize(line)):
-			if 'NN' in pos:
-				nouns.add(word.lower())
+		if sent == 'pos':
+			posList.append(line)
 
-		pairs.append((line,nouns))
-
-
-
-
-	#sets = map(lambda x: x[1], pairs)
-
-	sets = [{1,2},{2,3},{6,4}]
+	for i,line1 in enumerate(posList):
+		for j,line2 in enumerate(posList):
+			intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
+			if i != j and intersect > 0:
+				print i,'\t',j,'\t',intersect
 
 
+def readRanks():
+	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
 
-def foo(l, num, num2):
-	if (num-1) >= len(l):
+	posList = []
+
+	for line,sent in annotPlain:
+		if sent == 'pos':
+			posList.append(line)
+
+
+	ranked = []
+
+	for line in open('graph_out','r').readlines():
+		pair = line.split('\t')
+		ranked.append((int(pair[0]),float(pair[1])))
+
+	for node,score in sorted(ranked,key=itemgetter(1)):
+		print posList[node]
+
+def intersection():
+	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
+	sets = []
+
+	for line,sent in annotPlain:
+		if sent == 'pos':
+			sets.append(set([a for (a,b) in nltk.pos_tag(nltk.word_tokenize(line.lower())) if 'NN' in b]))
+
+	group(sets)
+	for aset in sets:
+		print aset
+
+
+def group(sets):
+	over = containsOver(sets)
+
+	if not over:
 		return
-	if (num2) >= len(l):
-		foo(l, num+1, num+2)
-		return
-	if len(l) < 2:
-		return
-	print num
-	print num2
-	inter = l[num] & l[num2]
-	if len(inter) > 0:
-		l = l[:num] + [l[num] | l[num2]] + l[num2+1:]
-		foo(l, num, num2)
-		return
-	else:
-		foo(l, num, num2+1)
-		return
-	return
+
+	i,j = over
+	ele1 = sets[i]
+	ele2 = sets[j]
+
+	sets.remove(ele1)
+	sets.remove(ele2)
+
+	sets.append(ele1|ele2)
+	group(sets)
 
 
+# function to determine if sets in listi 
+# contain any overlap
 def containsOver(listi):
 	for i,ele1 in enumerate(listi):
 		for j,ele2 in enumerate(listi):
 			if i != j and ele1&ele2:
-				return True
-	return False
+				return (i,j)
+	return None
 
 
 if __name__ == '__main__':
-	sets = [{1,2},{3,4},{4,5}]#[{1,2},{2,3},{6,4}]
-	print foo(sets,0,1)
-	print sets
+	readRanks()
 
 
 
