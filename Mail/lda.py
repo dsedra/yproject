@@ -21,7 +21,7 @@ def lda_first(corpus):
 	#lsi.print_topics(3)
 
 	
-	lda = gensim.models.ldamodel.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=3, update_every=0, chunksize=10, passes=20)
+	lda = gensim.models.ldamodel.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=3, update_every=0, chunksize=5, passes=200)
 	lda.show_topic(topicid=0, topn=3)
 	
 	return lda
@@ -39,11 +39,31 @@ def test_lda(corpus,posDocs):
 		index,score = max(ele,key=itemgetter(1))
 		bins[index].append(posDocs[i])
 	
-	for bin in bins:
-		print '\n\n'
-		for item in bin:
-			print item
-		print '\n\n'
+	return bins
+
+def constructGraph(lines,index):
+	name = 'graphn_'+str(index)
+	name2 = 'linen_'+str(index)
+
+	f = open(name,'w')
+	f2 = open(name2,'w')
+
+	for i,line1 in enumerate(lines): 
+		f2.write(line1+'\n')
+		for j,line2 in enumerate(lines):
+			intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
+			if i != j and intersect > 0:
+				out = i,'\t',j,'\t',intersect
+				f.write('\t'.join([str(i),str(j),str(intersect),'\n']))
+
+	f.close()
+	f2.close()
+
+def caller(bins):
+	for i,bin in enumerate(bins):
+		constructGraph(bin,i)
+
+
 
 if __name__ == '__main__':
 	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
@@ -55,11 +75,6 @@ if __name__ == '__main__':
 		if sent == 'pos':
 			posDocs.append(line)
 
-	total = 0
-	for rev in posDocs:
-		total += len(nltk.word_tokenize(rev))
-
-	print total,len(posDocs)
 
 	wordLists = [[word for word in nltk.word_tokenize(doc.lower()) if word not in stopwords] for doc in posDocs]
 
@@ -70,10 +85,7 @@ if __name__ == '__main__':
 	wordLists = [[word for word in text if word not in singles] for text in wordLists]
 	dictionary = corpora.Dictionary(wordLists)
 
-	dictionary.save_as_text('dict.txt')
-
-	id2word = gensim.corpora.Dictionary.load_from_text('dict.txt')
-
 	corpus = [dictionary.doc2bow(text) for text in wordLists]
 
-	#test_lda(corpus,posDocs)
+	caller(test_lda(corpus,posDocs))
+

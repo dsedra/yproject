@@ -7,7 +7,7 @@ use Data::Dump qw(dump);
 use Data::Dumper;
 my $ranker = Graph::Centrality::Pagerank->new();
 $listOfEdges = [];
-open(FILE,'./graph');
+open(FILE,'./graphn_2');
 
 $count = 0;
 while(<FILE>){

@@ -116,6 +116,24 @@ def readRanks():
 	for node,score in sorted(ranked,key=itemgetter(1)):
 		print posList[node]
 
+def readRanksNew():
+	for x in range(3):
+		print x,'#######\n\n'
+
+		ref = []
+		rank = []
+
+		for line in open('linen_'+str(x),'r').readlines():
+			ref.append(line)
+
+		for line in open('graphn_'+str(x)+'_out','r').readlines():
+			pair = line.split('\t')
+			rank.append((int(pair[0]),float(pair[1])))
+
+		for node,score in sorted(rank,key=itemgetter(1)):
+			print ref[node].strip()
+
+
 def intersection():
 	annotPlain = pickle.load(open('sent_400_bi.pickle','rb'))
 	sets = []
@@ -157,7 +175,7 @@ def containsOver(listi):
 
 
 if __name__ == '__main__':
-	readRanks()
+	readRanksNew()
 
 
 

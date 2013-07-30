@@ -300,6 +300,21 @@ def calcScoreVec():
 		training1.append(constructFeats(line,sent,dic))
 
 
+	for pair in test:
+		line,sent = pair[0]
+		testing1.append(constructFeats(line,sent,dic))
+
+	classifier1 = NaiveBayesClassifier.train(training1)
+
+	pairList = []
+	for i,(line,sent) in enumerate(testing1):
+		text,sent = train[i][0]
+		print text,sent,classifier1.classify(line)
+		pairList.append((sent,classifier1.classify(line),0,0))
+
+
+	stats(pairList)
+
 
 	# --------------- begin second classifier -------------- #
 
@@ -311,19 +326,28 @@ def calcScoreVec():
 		training2.append(constructFeats2(line,sent,synDict))
 
 
-	# --------------- begin selection classifier ----------- #
-	training3 = constructFeats3(pairList,train)
-	testing3 = constructFeats3(pairList,test)
 	
-	classifier3 = NaiveBayesClassifier.train(training3)
 
-	print 'accuracy:', nltk.classify.util.accuracy(classifier3, testing3)
+	# --------------- begin selection classifier ----------- #
+	#training3 = constructFeats3(pairList,train)
+	#testing3 = constructFeats3(pairList,test)
+	
+	#classifier3 = NaiveBayesClassifier.train(training3)
+
+
+	#statsList = []
+	#for line,sent in testing3:
+	#	statsList.append((sent,classifier3.classify(line),0,0))
+	
+	#stats(statsList)
+	
 	# --------------- compile stats ---------------- #
 
 	#classifier2 = NaiveBayesClassifier.train(training2)
 	#classifier1 = NaiveBayesClassifier.train(training1)
 	#classifier3 = NaiveBayesClassifier.train(training3)
 
+	#print 'accuracy:', nltk.classify.util.accuracy(classifier2, testing2)
 
 	#statsList = []
 	
@@ -371,8 +395,8 @@ def constructFeats3(pairList,whichever):
 
 	word_scores = {}
 	for word, freq in word_fd.iteritems():
-		pos_score = BigramAssocMeasures.dice(label_word_fd['pos'][word],(freq, pos_word_count),total_word_count)
-		neg_score = BigramAssocMeasures.dice(label_word_fd['neg'][word],(freq, neg_word_count),total_word_count)
+		pos_score = BigramAssocMeasures.chi_sq(label_word_fd['pos'][word],(freq, pos_word_count),total_word_count)
+		neg_score = BigramAssocMeasures.chi_sq(label_word_fd['neg'][word],(freq, neg_word_count),total_word_count)
 		word_scores[word] = pos_score + neg_score
  
 	best = sorted(word_scores.iteritems(), key=lambda (w,s): s, reverse=True)[:18]
@@ -527,6 +551,7 @@ def lookup(dict,word,pos):
 if __name__ == "__main__":
 	#nb_bi()
 	#nb_vector()
+	#for x in range(6):
 	calcScoreVec()
 
 
