@@ -1,4 +1,4 @@
-import nltk.classify.util, pickle, negate, random
+import nltk.classify.util, pickle, random #negate
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
 import parse, codecs, happyfuntokenizing, random
@@ -164,7 +164,7 @@ def nb_bi():
 		string = ' '.join(words)
 
 
-		neg = negate.negating(string.strip(' '))
+		#neg = negate.negating(string.strip(' '))
 
 		(p,n) = score
 
@@ -374,7 +374,7 @@ def calcScoreVec():
 
 
 # work with most informative ?? features
-def constructFeats3(pairList,whichever):
+def constructFeats3(lists, whichever):
 	from nltk.probability import FreqDist, ConditionalFreqDist
 	from nltk.metrics import BigramAssocMeasures
 
@@ -382,8 +382,8 @@ def constructFeats3(pairList,whichever):
 	word_fd = FreqDist()
 	label_word_fd = ConditionalFreqDist()
 
-	for pair in pairList:
-		line,sent = pair[0]
+	for pair in lists:
+		line,sent = pair
 		for word in nltk.word_tokenize(line):
 			word_fd.inc(word.lower())
 			label_word_fd[sent].inc(word.lower())
@@ -437,7 +437,7 @@ def constructFeats2(line,sent,synDict):
 	for word in line.strip().split(' '):
 		words.append(word.split('#')[0])
 
-	neg = negate.negating(' '.join(words))
+	#neg = negate.negating(' '.join(words))
 
 
 	for i,word in enumerate(line.strip().split(' ')):
