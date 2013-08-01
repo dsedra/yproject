@@ -32,13 +32,13 @@ Overview: This project is a Summer intern project at Yahoo! to attempt to extrac
 
 
 Pre-requistes:
-	- xcode w/ command line tools: https://developer.apple.com/xcode/
-	- Homebrew: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
-	- Python: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
-	- NLTK: www.nltk.org
-	- numpy: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
-	- scipy: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
-	- gensim: http://radimrehurek.com/gensim/
+	1. xcode w/ command line tools: https://developer.apple.com/xcode/
+	2. Homebrew: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
+	3. Python: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
+	4. NLTK: www.nltk.org
+	5. numpy: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
+	6. scipy: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
+	7. gensim: http://radimrehurek.com/gensim/
 	
 ** There may be more packages listed on these websites that need installing!
 	 
