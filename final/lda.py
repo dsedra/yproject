@@ -20,9 +20,8 @@ def lda_first(corpus):
 	#corpus_lsi = lsi[corpus_tfidf]
 	#lsi.print_topics(3)
 
-	
 	lda = gensim.models.ldamodel.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=3, update_every=0, chunksize=5, passes=200)
-	lda.show_topic(topicid=0, topn=3)
+	#lda.show_topic(topicid=0, topn=3)
 	
 	return lda
 

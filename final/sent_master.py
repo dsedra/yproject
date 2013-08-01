@@ -7,12 +7,20 @@ Master file which incorporates polarity classification, topic modeling, and rank
 import pickle
 import sys
 import getopt
+import os
 
-#classifier
+# classifier
 import nltk
 from nltk.metrics import BigramAssocMeasures
 from nltk.collocations import BigramCollocationFinder
 from nltk.classify import NaiveBayesClassifier
+
+# lda
+import pickle, nltk, gensim, logging
+from gensim import corpora, models, similarities
+from operator import itemgetter
+import subprocess
+#logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 def main(argv):
 	# params
@@ -56,9 +64,9 @@ def main(argv):
 			else:
 				num_top = arg
 
-	# read in both the training file
-	# and the test file (the one we actually)
-	# want to classify
+
+
+	# read in both the training file and the test file (the one we actually) want to classify
 	trainLines = [tuple(line.strip('\n').split(' &&*%*&& ')) for line in trainf.readlines()]
 	testLines = [line.strip() for line in testf.readlines()]
 
@@ -69,35 +77,114 @@ def main(argv):
 	# classify entire test set
 	classified = classify(testLines,bestwords,classifier)
 
-	# generate two output graphs 
-	generate_graph(classified)
+	# generate positive and negative models
+	neg_lda = generate_model(classified['neg'],topics)
+	#pos_lda = generate_model(classified['pos'],topics)
 
+	neg_bins = get_bins(classified['neg'],neg_lda,topics)
+	#pos_bins = get_bins(classified['pos'],pos_lda,topics):
 	
-def generate_graph(classified):
-	p_file = open('graph_pos', 'w')
-	n_file = open ('graph_neg', 'w')
+	generate_graph(neg_bins,'neg')
+	#generate_graph(pos_bins,'pos')
 
-	print 'asdfadfasd'
+	get_top(neg_bins,'neg',num_top)
 
-	print len(classified['pos']),len(classified['neg'])
+# return the top reviews from each topic using
+# output of generate_graph 
+def get_top(bins, prefix, num_top):
+	for i,bin in enumerate(bins):
+		name = prefix + '_' + str(i) + '_out'
+		cf = open(name,'r')
+
+		scores = []
+		for line in cf.readlines():
+			pair = line.strip().split('\t')
+			num,score = int(pair[0]),float(pair[1])
+			scores.append((num,score))
+
+		print 'bin no. ',i
+		for ele in bin:
+			print ele
+
+
+
+		srt = sorted(scores,key=itemgetter(1),reverse=True)
+		print 'prefix',i,map(lambda x: x[0],srt[:num_top]),len(bin)
+
+
+def get_bins(lines, lda, num_bins):
+	corpus,dictionary = generate_corpus(lines)
+	bins = [[] for x in xrange(num_bins)]
+
+	doc_lda = lda[corpus]
+
+	for i,ele in enumerate(doc_lda):
+		index,score = max(ele,key=itemgetter(1))
+		bins[index].append(lines[i])
 	
-	for i,line1 in enumerate(classified['pos']):
-		for j,line2 in enumerate(classified['pos']):
-			intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
-			if i != j and intersect > 0:
-				out = '\t'.join([str(i),str(j),str(intersect)])+'\n'
-				p_file.write(out)
+	return bins
 
-	for i,line1 in enumerate(classified['neg']):
-		for j,line2 in enumerate(classified['neg']):
-			intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
-			if i != j and intersect > 0:
-				out = '\t'.join([str(i),str(j),str(intersect)])+'\n'
-				n_file.write(out)
+def generate_corpus(lines):
+	# create corpus
+	wordLists = []
+	stopwords = {'and','or','for','a','of','it','app', 'the'}
 
+	wordLists = [[word for word in nltk.word_tokenize(doc.lower()) if word not in stopwords] for doc in lines]
 
+	vocab = sum(wordLists, [])
+	
+	singles = set(word for word in set(vocab) if vocab.count(word) == 1)
 
+	wordLists = [[word for word in text if word not in singles] for text in wordLists]
+	dictionary = corpora.Dictionary(wordLists)
 
+	corpus = [dictionary.doc2bow(text) for text in wordLists]
+
+	return (corpus,dictionary)
+
+# lda stuff
+def generate_model(lines, num_topics):
+	# create corpus
+	corpus,dictionary = generate_corpus(lines)
+
+	# generate model
+
+	tfidf = models.TfidfModel(corpus)
+
+	corpora.MmCorpus.serialize('corpus.mm', corpus)
+
+	corpus = corpora.MmCorpus('corpus.mm')
+
+	tfidf = models.TfidfModel(corpus)
+
+	corpus_tfidf = tfidf[corpus]
+	
+	lda = gensim.models.ldamodel.LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=num_topics, update_every=0, chunksize=5, passes=20)
+	lda.show_topic(topicid=0, topn=num_topics)
+	
+	return lda
+
+# takes lines and outputfile prefix (e.g. positive) and 
+# generates graph files for each of the 
+def generate_graph(bins, prefix):
+	for k,bin in enumerate(bins):
+		fname = prefix + '_' + str(k)
+		cf = open(fname, 'w')
+
+		print len(bin),'##$$$'
+
+		for i,line1 in enumerate(bin):
+			print i
+			for j,line2 in enumerate(bin):
+				intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
+				if i != j and intersect > 0:
+					out = '\t'.join([str(i),str(j),str(intersect)])+'\n'
+					cf.write(out)
+
+		# run PageRank script on generated graph, then delete temp graph file
+		subprocess.call(['perl','graph.pl',fname])
+		cf.close()
+		#os.remove(fname)
 
 def build_classifier(lines, bestwords):
 	trainFeats = []
