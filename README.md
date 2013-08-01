@@ -31,7 +31,7 @@ Overview: This project is a Summer intern project at Yahoo! to attempt to extrac
 
 
 
-Pre-requistes:
+5. Pre-requistes:
 	1. xcode w/ command line tools: https://developer.apple.com/xcode/
 	2. Homebrew: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 	3. Python: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
@@ -42,6 +42,3 @@ Pre-requistes:
 	
 ** There may be more packages listed on these websites that need installing!
 	 
-
-
-* n Note that these may have more pre-reqs and should be installed appropriately.
