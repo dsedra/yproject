@@ -1,6 +1,7 @@
 """
 
-Master file which incorporates polarity classification, topic modeling, and ranking.
+Master file which incorporates polarity classification, topic modeling, and ranking. Read descriptions and 
+uncomment based on 
 
 """
 
@@ -20,7 +21,8 @@ import pickle, nltk, gensim, logging
 from gensim import corpora, models, similarities
 from operator import itemgetter
 import subprocess
-#logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+#logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO) # uncomment for logs
+
 
 def main(argv):
 	# params
@@ -29,46 +31,47 @@ def main(argv):
 	try:
 		opts, args = getopt.getopt(argv, 'a:s:t:n:')
 	except getopt.GetoptError:
-		print 'usage: -a <annotated file> -s <test file> -t <number of topics> -n <number per topic>'
-		sys.exit(2)
+		usage(2)
 
 	trainf = ''
 	testf = ''
+	taf = tsf = None
 	topics = num_top = 3
+
+	print opts
 
 	for opt, arg in opts:
 		if opt == '-a':
 			try:
-				trainf = open(arg, 'rb')
+				taf = open(arg, 'rb')
 			except IOError:
-				print "Couldn't find annotated file"
-				exit()
+				usage(2)
 		elif opt == '-s':
 			try:
-				testf = open(arg, 'rb')
+				tsf = open(arg, 'rb')
 			except IOError:
-				print "Couldn't find test file"
-				exit()
+				usage(2)
 		elif opt == '-t':
 			arg = int(arg)
 			if opt <= 0:
-				print "Non-negative no. topics, please"
-				exit(0)
+				usage(0)
 			else:
 				topics = arg
 		elif opt == '-n':
 			arg = int(arg)
 			if opt <= 0:
-				print "Non-negative no. topics, please"
-				exit(0)
+				usage(0)
 			else:
 				num_top = arg
+		else:
+			usage(0)
 
-
+	if not taf or not tsf:
+		usage(0)
 
 	# read in both the training file and the test file (the one we actually) want to classify
-	trainLines = [tuple(line.strip('\n').split(' &&*%*&& ')) for line in trainf.readlines()]
-	testLines = [line.strip() for line in testf.readlines()]
+	trainLines = [tuple(line.strip('\n').split(' &&*%*&& ')) for line in taf.readlines()]
+	testLines = [line.strip() for line in tsf.readlines()]
 
 	bestwords = get_best_words(trainLines, num_best_words)
 	
@@ -89,9 +92,15 @@ def main(argv):
 
 	get_top(neg_bins,'neg',num_top)
 
+
+def usage(e_num):
+	print 'usage: -a <annotated file> -s <test file> -t <number of topics> -n <number per topic>'
+	sys.exit(e_num)
+
 # return the top reviews from each topic using
 # output of generate_graph 
 def get_top(bins, prefix, num_top):
+	print 'For category ' + prefix + '\n\n'
 	for i,bin in enumerate(bins):
 		name = prefix + '_' + str(i) + '_out'
 		cf = open(name,'r')
@@ -102,14 +111,12 @@ def get_top(bins, prefix, num_top):
 			num,score = int(pair[0]),float(pair[1])
 			scores.append((num,score))
 
-		print 'bin no. ',i
-		for ele in bin:
-			print ele
-
-
-
 		srt = sorted(scores,key=itemgetter(1),reverse=True)
-		print 'prefix',i,map(lambda x: x[0],srt[:num_top]),len(bin)
+		print 'For topic ' + str(i) + '\n\n'
+
+		#print top num_top from each bin
+		for ele in map(lambda x: bin[x[0]],srt[:num_top]):
+			print '\t-' + ele + '\n'
 
 
 def get_bins(lines, lda, num_bins):
@@ -171,10 +178,7 @@ def generate_graph(bins, prefix):
 		fname = prefix + '_' + str(k)
 		cf = open(fname, 'w')
 
-		print len(bin),'##$$$'
-
 		for i,line1 in enumerate(bin):
-			print i
 			for j,line2 in enumerate(bin):
 				intersect = len(set(nltk.word_tokenize(line1)) & set(nltk.word_tokenize(line2)))
 				if i != j and intersect > 0:
@@ -182,9 +186,10 @@ def generate_graph(bins, prefix):
 					cf.write(out)
 
 		# run PageRank script on generated graph, then delete temp graph file
-		subprocess.call(['perl','graph.pl',fname])
 		cf.close()
-		#os.remove(fname)
+
+		subprocess.call(['perl','graph.pl',fname])
+		os.remove(fname)
 
 def build_classifier(lines, bestwords):
 	trainFeats = []
