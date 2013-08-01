@@ -40,5 +40,5 @@ Overview: This project is a Summer intern project at Yahoo! to attempt to extrac
 	6. scipy: http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 	7. gensim: http://radimrehurek.com/gensim/
 	
-** There may be more packages listed on these websites that need installing!
+** There may be more packages listed on these websites that need installing! Just look in the README for each and follow the instructions.
 	 
